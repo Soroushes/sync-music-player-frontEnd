@@ -1,6 +1,16 @@
+import {useEffect, useState} from "react";
+import {ReadMusic} from "../helpers/readMusic";
 const MusicPlay = ()=>{
+    const [music , setMusic] = useState('') ;
+    useEffect(()=>{
+        ReadMusic().then((url : any)=>{
+            console.log(url);
+            setMusic(url)
+        })
+    },[])
+
     return(
-        <audio controls src="https://dl.naslemusic.com/music/1401/01/Shadmehr%20Aghili%20-%20Bi%20Ehsas%20(320-Naslemusic).mp3"></audio>
+        <audio controls src={music}></audio>
     )
 }
 export default MusicPlay ;

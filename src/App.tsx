@@ -1,9 +1,10 @@
 import {Route, Routes} from "react-router-dom";
+import MusicPlay from "./pages/MusicPlay";
 
 const App = ()=>{
     return(
         <Routes>
-            <Route path={'/'} element={<h1>salam</h1>}/>
+            <Route path={'/'} element={<MusicPlay/>}/>
         </Routes>
     )
 }
