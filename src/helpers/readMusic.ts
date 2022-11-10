@@ -12,17 +12,18 @@ const getCachedData = async (cacheName: string, url: string) => {
         console.log(err);
     }
 }
-const catchMusic = async () => {
+const catchMusic = async (value : string) => {
     try {
         //get data
-        const {data} = await getMusic();
+        const {data} = await getMusic(value);
+        console.log(data);
         //Already exist ?
-        let cached : any = await getCachedData(String('music'), data.url);
+        let cached : any = await getCachedData(String('music'), data.data.url);
         if (!cached.body) {
             console.log('nodata')
             const cache = await caches.open(String('music'));
-            await cache.add(data.url);
-            cached = await getCachedData('music', data.url);
+            await cache.add(data.data.url);
+            cached = await getCachedData('music', data.data.url);
         }
         //Get Data
         const reader = cached.body.getReader() ;
@@ -45,9 +46,9 @@ const catchMusic = async () => {
         console.log(err)
     }
 }
-export const ReadMusic = () => (
+export const ReadMusic = (value : string) => (
     new Promise((resolve, reject) => {
-        catchMusic().then((stream) => new Response(stream))
+        catchMusic(value).then((stream) => new Response(stream))
             // Create an object URL for the response
             .then((response) => response.blob())
             .then((blob) => URL.createObjectURL(blob))

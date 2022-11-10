@@ -1,8 +1,11 @@
 import axios from 'axios'
-const getMusic = ()=>(
+const getMusic = (value)=>(
     axios({
-        method : "GET" ,
-        url : "http://localhost:5000/music"
+        method : "POST" ,
+        url : "https://music.devmev.ir/api/radio-javan" ,
+        data : {
+            url : value
+        }
     })
 )
 export default getMusic ;
