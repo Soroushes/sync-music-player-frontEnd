@@ -1,28 +1,36 @@
 import getMusic from "../queries/getMusic";
-const getCachedData = async (cacheName : string , url : string)=>{
-    const cacheStorage = await caches.open(cacheName);
-    const cachedResponse = await cacheStorage.match(url);
-    if (!cachedResponse || !cachedResponse.ok) {
-        return false;
+
+const getCachedData = async (cacheName: string, url: string) => {
+    try {
+        const cacheStorage = await caches.open(cacheName);
+        const cachedResponse = await cacheStorage.match(url);
+        if (!cachedResponse || !cachedResponse.ok) {
+            return {};
+        }
+        return cachedResponse;
+    } catch (err) {
+        console.log(err);
     }
-    return  cachedResponse;
 }
-const catchMusic = async ()=>{
-    try{
-        const {data} = await getMusic() ;
-        const hasData = await getCachedData(String('music'), data.url);
-        if (!hasData){
+const catchMusic = async () => {
+    try {
+        //get data
+        const {data} = await getMusic();
+        //Already exist ?
+        let cached : any = await getCachedData(String('music'), data.url);
+        if (!cached.body) {
             console.log('nodata')
             const cache = await caches.open(String('music'));
             await cache.add(data.url);
+            cached = await getCachedData('music', data.url);
         }
-        const cachedData = await getCachedData('music', data.url);
-        const reader = cachedData.body.getReader() ;
+        //Get Data
+        const reader = cached.body.getReader() ;
         return new ReadableStream({
             start(controller) {
-                return pump();
+                return reader ? pump() : false;
                 function pump() {
-                    return reader.read().then(({ done , value } : any) => {
+                    return reader.read().then(({done, value}: any) => {
                         if (done) {
                             controller.close();
                             return;
@@ -33,21 +41,19 @@ const catchMusic = async ()=>{
                 }
             }
         })
-    }catch (err){
+    } catch (err) {
         console.log(err)
     }
 }
-export const ReadMusic = ()=>{
-    return new Promise((resolve , reject)=>{
+export const ReadMusic = () => (
+    new Promise((resolve, reject) => {
         catchMusic().then((stream) => new Response(stream))
             // Create an object URL for the response
             .then((response) => response.blob())
             .then((blob) => URL.createObjectURL(blob))
-            // Update image
+            // Update Audio
             .then((url) => resolve(url))
-            .catch((err)=>{
+            .catch((err) => {
                 reject(err)
             })
-    })
-
-}
+    }))
