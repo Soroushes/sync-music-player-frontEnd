@@ -1,19 +1,50 @@
-import {useEffect, useState} from "react";
-import {ReadMusic} from "../helpers/readMusic";
+import React, {useEffect, useState} from "react";
+import cacheMusic from "../helpers/cacheMusic";
+import findCache from "../helpers/findCache";
+import readMusic from "../helpers/readMusic";
 const MusicPlay = ()=>{
-    const [music , setMusic] = useState('') ;
-    const [value , setValue] = useState('') ;
-    const searchMusic = ()=>{
-        ReadMusic(value).then((url : any)=> {
-            console.log(url);
-            setMusic(url);
-        })
+    const [adding , setAdding] = useState<boolean>(false);
+    const [musics , setMusics] = useState<readonly Response[]>([]) ;
+    const [value , setValue] = useState<string>('') ;
+    const [link , setLink] = useState<any>('') ;
+    const addMusic = async ()=>{
+        setAdding(true)
+        await cacheMusic(value);
+        await getMusics() ;
+        setAdding(false) ;
+        setValue('');
     }
+    const selectMusic = async (url : string)=>{
+        const cache = await findCache('music' , url) ;
+        const result = await readMusic(cache) ;
+        setLink(result) ;
+    }
+    const getMusics = async ()=>{
+        try {
+            const cacheStorage : Cache = await caches.open('music');
+            const cachedResponse : readonly Response[] = await cacheStorage.matchAll();
+            setMusics(cachedResponse);
+        }catch (err){
+            console.log(err)
+        }
+    }
+    useEffect(()=>{
+        getMusics();
+    },[])
     return(
         <>
-            <button onClick={searchMusic}>search</button>
-            <input value={value} onChange={(e :React.ChangeEvent<HTMLInputElement> )=>setValue(e.target.value)} type="text"/>
-            <audio controls src={music}></audio>
+            {
+                musics.map((music : Response, index : number)=>{
+                    return <div key={index} onClick={selectMusic.bind(this , music.url)} style={{cursor : "pointer"}}>{music.url}</div>
+                })
+            }
+
+            <input className={'form-control w-75 mt-4'} value={value} onChange={(e :React.ChangeEvent<HTMLInputElement> )=>setValue(e.target.value)} type="text"/>
+            <button onClick={addMusic}>search</button>
+            {
+                adding ? <div>loading....</div> : ""
+            }
+            <div className={'my-5'}><audio src={link} controls></audio></div>
         </>
     )
 }
