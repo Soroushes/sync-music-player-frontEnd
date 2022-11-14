@@ -15,9 +15,9 @@ const MusicPlay = ()=>{
         setValue('');
     }
     const selectMusic = async (url : string)=>{
-        const cache = await findCache('music' , url) ;
-        const result = await readMusic(cache) ;
-        setLink(result) ;
+        const cache = await findCache('music' , url);
+        const result = await readMusic(cache);
+        setLink(result);
     }
     const getMusics = async ()=>{
         try {
@@ -28,6 +28,13 @@ const MusicPlay = ()=>{
             console.log(err)
         }
     }
+    const deleteMusic = async (url : string)=>{
+        setAdding(true)
+        const cacheStorage : Cache = await caches.open('music');
+        await cacheStorage.delete(url)
+        await getMusics();
+        setAdding(false)
+    }
     useEffect(()=>{
         getMusics();
     },[])
@@ -35,7 +42,12 @@ const MusicPlay = ()=>{
         <>
             {
                 musics.map((music : Response, index : number)=>{
-                    return <div key={index} onClick={selectMusic.bind(this , music.url)} style={{cursor : "pointer"}}>{music.url}</div>
+                    return(
+                        <div key={index}>
+                            <span className={'mx-3'} onClick={selectMusic.bind(this , music.url)} style={{cursor : "pointer"}}>{music.url}</span>
+                            <span className={'mx-3'} onClick={deleteMusic.bind(this , music.url)} style={{cursor : "pointer"}}>delete music</span>
+                        </div>
+                    )
                 })
             }
 

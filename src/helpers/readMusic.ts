@@ -1,7 +1,7 @@
 const catchMusic = async (cached : any) => {
     const reader = cached.body.getReader() ;
     return new ReadableStream({
-        start(controller) {
+        start(controller){
             return reader ? pump() : false;
             function pump() {
                 return reader.read().then(({done, value}: any) => {
@@ -11,7 +11,7 @@ const catchMusic = async (cached : any) => {
                     }
                     controller.enqueue(value);
                     return pump();
-                });
+                })
             }
         }
     })
