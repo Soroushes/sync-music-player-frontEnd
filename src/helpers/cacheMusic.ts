@@ -1,14 +1,12 @@
 import getMusic from "../queries/getMusic";
 import findCache from "./findCache";
-const cacheMusic = async (value : string)=>{
+const cacheMusic = async (url : string)=>{
     try {
-        //get data
-        const {data} = await getMusic(value);
         //Already exist ?
-        const cached : any = await findCache('music', data.data.url);
+        const cached : any = await findCache('music', url);
         if (!cached.body) {
             const cache : Cache = await caches.open('music');
-            await cache.add(data.data.url);
+            await cache.add(url);
         }
         return true ;
     }catch (err){
